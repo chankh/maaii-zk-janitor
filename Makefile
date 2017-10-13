@@ -1,17 +1,3 @@
-# Copyright 2016 The Kubernetes Authors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 # The binary to build (just the basename).
 BIN := maaii-zk-janitor
 
@@ -54,11 +40,7 @@ ROOT_DIR := $(realpath .)
 # we're cross-compiling or not
 BUILDER_GOOS_GOARCH="$(GOOS)_$(GOARCH)"
 
-PKGS = $(shell $(GO) list ./cmd/... ./pkg/... | grep -v /vendor/)
-
-TAGS ?= "netgo"
-BUILD_ENV =
-ENVFLAGS = $(BUILD_ENV)
+PKGS = $(shell $(GO) list . ./cmd/... ./pkg/... | grep -v /vendor/)
 
 ifneq ($(GOOS), darwin)
 	EXTLDFLAGS = -extldflags "-lm -lstdc++ -static"
@@ -67,9 +49,9 @@ else
 endif
 
 GO_LINKER_FLAGS ?= --ldflags \
-	'$(EXTLDFLAGS) -s -w -X "github.com/chankh/maaii-zk-janitor/pkg/version.BuildNumber=$(BUILD_NUMBER)" \
-   -X "github.com/chankh/maaii-zk-janitor/pkg/version.BuildDate=$(BUILD_DATE)" \
-   -X "github.com/chankh/maaii-zk-janitor/pkg/version.BuildHash=$(BUILD_HASH)"'
+   '$(EXTLDFLAGS) -s -w -X "$(PKG)/pkg/version.BuildNumber=$(BUILD_NUMBER)" \
+   -X "$(PKG)/pkg/version.BuildDate=$(BUILD_DATE)" \
+   -X "$(PKG)/pkg/version.BuildHash=$(BUILD_HASH)"'
 
 ###
 ### These variables should not need tweaking.
@@ -124,8 +106,8 @@ generate:
 
 build-local: generate
 	@echo "==> Building binary ($(GOOS)/$(GOARCH))..."
-	@echo $(ENVFLAGS) $(GO) build -a -installsuffix "static" $(GOFLAGS) $(GO_LINKER_FLAGS) -o bin/$(GOOS)_$(GOARCH)/$(BIN) .
-	@cd cmd/$(BIN) && $(ENVFLAGS) $(GO) build -a -installsuffix "static" $(GOFLAGS) $(GO_LINKER_FLAGS) -o ../../bin/$(GOOS)_$(GOARCH)/$(BIN) .
+	@echo $(GO) build -a -installsuffix "static" $(GOFLAGS) $(GO_LINKER_FLAGS) -o bin/$(GOOS)_$(GOARCH)/$(BIN) .
+	@cd cmd/$(BIN) && $(GO) build -a -installsuffix "static" $(GOFLAGS) $(GO_LINKER_FLAGS) -o ../../bin/$(GOOS)_$(GOARCH)/$(BIN) .
 
 build: bin/$(ARCH)/$(BIN)
 
@@ -146,6 +128,9 @@ bin/$(ARCH)/$(BIN): build-dirs
 	        ARCH=$(ARCH)                                                    \
 	        VERSION=$(VERSION)                                              \
 	        PKG=$(PKG)                                                      \
+	        BUILD_NUMBER=$(BUILD_NUMBER)                                    \
+	        BUILD_DATE='$(BUILD_DATE)'                                      \
+	        BUILD_HASH=$(BUILD_HASH)                                        \
 	        ./build/build.sh                                                \
 	    "
 

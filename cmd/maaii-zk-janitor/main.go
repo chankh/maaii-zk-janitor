@@ -1,17 +1,16 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
+	"github.com/chankh/maaii-zk-janitor/pkg/version"
 	"github.com/samuel/go-zookeeper/zk"
 	"github.com/sirupsen/logrus"
 )
-
-var zkUrl = "192.168.118.11:2181,192.168.118.12:2181,192.168.118.13:2181/maaii"
-var debug = true
-var dryRun = false
 
 const (
 	CLUSTER_MEMBERSHIP string = "cluster-membership"
@@ -19,13 +18,37 @@ const (
 )
 
 func main() {
-	var log = logrus.New()
+	fs := flag.NewFlagSet("", flag.ExitOnError)
 
-	if debug {
-		log.Level = logrus.DebugLevel
+	zkUrl := fs.String("zk", "localhost", "Zookeeper connection string")
+	debug := fs.Bool("debug", false, "Enable debug logs")
+	dryRun := fs.Bool("dry-run", false, "Dry run mode, does not actually delete nodes")
+	showVer := fs.Bool("version", false, "Print the version number")
+
+	flag.Usage = fs.Usage
+
+	if err := fs.Parse(os.Args[1:]); err != nil {
+		fmt.Fprintf(os.Stderr, "%v", err)
+		os.Exit(1)
 	}
 
-	splitted := strings.Split(zkUrl, "/")
+	if *showVer {
+		fmt.Printf("Version\t\t: %s\n", version.Version)
+		fmt.Printf("Build Date\t: %s\n", version.BuildDate)
+		fmt.Printf("Build Number\t: %s\n", version.BuildNumber)
+		fmt.Printf("Build Hash\t: %s\n", version.BuildHash)
+		fmt.Printf("Platform\t: %s\n", version.BuildPlatform)
+		fmt.Printf("Go Version\t: %s\n", version.GoVersion)
+		os.Exit(0)
+	}
+	var log = logrus.New()
+
+	if *debug {
+		log.Level = logrus.DebugLevel
+		log.Debug("Debug mode enabled")
+	}
+
+	splitted := strings.Split(*zkUrl, "/")
 
 	zkRoot := ""
 	if len(splitted) == 2 {
@@ -66,7 +89,7 @@ func main() {
 			count = count + 1
 
 			// do not execute delete if running in dryRun mode
-			if !dryRun {
+			if !*dryRun {
 				path := fmt.Sprintf("%s/%s", data_path, d)
 				err = c.Delete(path, -1)
 				if err != nil {
