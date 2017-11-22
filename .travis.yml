@@ -4,7 +4,12 @@ go:
   - 1.8.x
   - 1.9.x
 
-sudo: required
+before_install: go get -u github.com/golang/dep/cmd/dep
 
-services:
-  - docker
+install: 
+  - dep ensure
+
+script: make build-local
+
+deploy:
+  skip_cleanup: true

@@ -67,9 +67,9 @@ else
 endif
 
 GO_LINKER_FLAGS ?= --ldflags \
-	'$(EXTLDFLAGS) -s -w -X "github.com/smsjunk/server/pkg/version.BuildNumber=$(BUILD_NUMBER)" \
-   -X "github.com/smsjunk/server/pkg/version.BuildDate=$(BUILD_DATE)" \
-   -X "github.com/smsjunk/server/pkg/version.BuildHash=$(BUILD_HASH)"'
+	'$(EXTLDFLAGS) -s -w -X "github.com/chankh/maaii-zk-janitor/pkg/version.BuildNumber=$(BUILD_NUMBER)" \
+   -X "github.com/chankh/maaii-zk-janitor/pkg/version.BuildDate=$(BUILD_DATE)" \
+   -X "github.com/chankh/maaii-zk-janitor/pkg/version.BuildHash=$(BUILD_HASH)"'
 
 ###
 ### These variables should not need tweaking.
@@ -95,7 +95,7 @@ endif
 
 IMAGE := $(REGISTRY)/$(BIN)-$(ARCH)
 
-BUILD_IMAGE ?= golang:1.9-alpine
+BUILD_IMAGE ?= golang:1.9
 
 # If you want to build all binaries, see the 'all-build' rule.
 # If you want to build all containers, see the 'all-container' rule.
