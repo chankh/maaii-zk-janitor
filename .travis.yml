@@ -10,3 +10,6 @@ install:
   - dep ensure
 
 script: make build-local
+
+deploy:
+  skip_cleanup: true
