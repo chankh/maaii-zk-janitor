@@ -13,3 +13,8 @@ script: make build-local
 
 deploy:
   skip_cleanup: true
+  provider: script
+  script: maaii-zk-janitor --help
+  on:
+    tags: true
+    all_branches: true
